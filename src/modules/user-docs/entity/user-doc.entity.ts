@@ -1,12 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryColumn, Column, CreateDateColumn } from 'typeorm';
 import { IsUUID, IsOptional, IsString } from 'class-validator';
 
 @Entity('user_docs')
 export class UserDoc {
-  @PrimaryGeneratedColumn()
-  id: number;
+  // @PrimaryGeneratedColumn()
+  // id: number;
 
-  @Column({ type: 'uuid', default: () => 'public.uuid_generate_v4()' })
+  @PrimaryColumn() //, default: () => 'public.uuid_generate_v4()' 
+  @IsString()
   doc_id: string;
 
   @Column({ type: 'uuid' })

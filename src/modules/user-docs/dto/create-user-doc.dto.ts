@@ -6,6 +6,9 @@ export class CreateUserDocDto {
   user_id: string;
 
   @IsString()
+  doc_id: string;
+
+  @IsString()
   doc_type: string;
 
   @IsOptional()
@@ -19,6 +22,6 @@ export class CreateUserDocDto {
   @IsString()
   doc_data?: string;
 
-  @IsDateString()  // Ensure that uploaded_at is a valid date string
-  uploaded_at: string;
+  // @IsDateString()  // Ensure that uploaded_at is a valid date string
+  // uploaded_at: string;
 }
