@@ -3,10 +3,11 @@ import { IsString, IsUUID, IsOptional, IsDateString } from 'class-validator';
 
 export class CreateUserDocDto {
   @IsUUID()
-  user_id: string;
+  sso_id: string;
 
+  @IsOptional()
   @IsString()
-  doc_id: string;
+  doc_id?: string;
 
   @IsString()
   doc_type: string;
@@ -15,12 +16,17 @@ export class CreateUserDocDto {
   @IsString()
   doc_subtype?: string;
 
+  @IsOptional()
   @IsString()
-  doc_name: string;
+  issuer?: string;
 
   @IsOptional()
   @IsString()
   doc_data?: string;
+
+  @IsOptional()
+  @IsString()
+  file?: string;
 
   // @IsDateString()  // Ensure that uploaded_at is a valid date string
   // uploaded_at: string;

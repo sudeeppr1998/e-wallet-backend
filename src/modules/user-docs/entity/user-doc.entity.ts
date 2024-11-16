@@ -12,7 +12,7 @@ export class UserDoc {
 
   @Column({ type: 'uuid' })
   @IsUUID()
-  user_id: string;
+  sso_id: string;
 
   @Column({ type: 'varchar', length: 50 })
   @IsString()
@@ -22,9 +22,9 @@ export class UserDoc {
   @IsOptional()
   doc_subtype: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   @IsString()
-  doc_name: string;
+  issuer: string;
 
   @Column({ type: 'text', nullable: true })
   @IsOptional()

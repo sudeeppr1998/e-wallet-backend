@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserDoc } from './entity/user-doc.entity';
@@ -13,10 +13,42 @@ export class UserDocsService {
     private userDocsRepository: Repository<UserDoc>,
   ) {}
 
-  async create(createUserDocDto: CreateUserDocDto){
+  async create(createUserDocDto: CreateUserDocDto, vcfile:any){
     try {
-      const docData = await this.fetchDocData(createUserDocDto.doc_id);
-      createUserDocDto.doc_data=docData;
+      if(createUserDocDto.doc_id != undefined){
+        try {
+          const docData = await this.fetchDocData(createUserDocDto.doc_id);
+          createUserDocDto.doc_data = docData;
+          createUserDocDto.issuer = docData.issuer;
+        } catch (error) {
+          console.log(error);
+          if (error instanceof NotFoundException) {
+            return new ErrorResponse({
+              statusCode: 404,
+              errorMessage: error.message,
+            });
+          }
+          throw error;
+        }
+      }else if(vcfile != undefined){
+        const vcJsonString = vcfile.buffer.toString();
+        const vcJsonData = JSON.parse(vcJsonString);
+        createUserDocDto.doc_id = vcJsonData.id;
+        createUserDocDto.doc_data = vcJsonData;
+        createUserDocDto.issuer = vcJsonData.issuer;
+      }
+
+      const existingDoc = await this.userDocsRepository.findOne({
+        where: { doc_id: createUserDocDto.doc_id },
+      });
+
+      if (existingDoc) {
+        return new ErrorResponse({
+          statusCode: 409, // Conflict status code
+          errorMessage: `Document with doc_id ${createUserDocDto.doc_id} already exists`,
+        });
+      }
+      
       const userDoc = this.userDocsRepository.create(createUserDocDto);
       await this.userDocsRepository.save(userDoc);
       return new SuccessResponse({
@@ -33,17 +65,31 @@ export class UserDocsService {
     }
   }
 
-  async fetchByUserId(user_id: string): Promise<UserDoc[]> {
-    return await this.userDocsRepository.find({ where: { user_id } });
+  async fetchByUserId(sso_id: string): Promise<UserDoc[]> {
+    return await this.userDocsRepository.find({ where: { sso_id } });
   }
 
-  private async fetchDocData(doc_id: string): Promise<string> {
+  private async fetchDocData(doc_id: string): Promise<any> {
     const apiUrl = `${process.env.SUNBIRD_RC_URL_VCDATA}/${doc_id}`;
-    console.log(apiUrl)
     try {
-      const response = await axios.get(apiUrl,{headers:{'Accept': 'application/json',}});
+      const response = await axios.request({
+        method: 'get',
+        maxBodyLength: Infinity,
+        url: apiUrl,
+        headers: { 
+          Accept: 'application/json',
+        },
+      });
+  
+      if (!response.data) {
+        throw new NotFoundException(`Document with doc_id ${doc_id} not found`);
+      }
+  
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
+      if (error.response && error.response.status === 404) {
+        throw new NotFoundException(`Document with doc_id ${doc_id} not found`);
+      }
       throw new Error(`Failed to fetch doc_data for doc_id: ${doc_id} - ${error.message}`);
     }
   }
