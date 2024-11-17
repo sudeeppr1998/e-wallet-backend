@@ -65,7 +65,7 @@ export class UserDocsService {
     }
   }
 
-  async fetchByUserId(sso_id: string): Promise<UserDoc[]> {
+  async fetchBySsoId(sso_id: string): Promise<UserDoc[]> {
     return await this.userDocsRepository.find({ where: { sso_id } });
   }
 

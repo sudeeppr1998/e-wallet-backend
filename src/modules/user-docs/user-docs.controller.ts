@@ -21,11 +21,11 @@ export class UserDocsController {
     return res.status(uploadedDoc.statusCode).json({ ...uploadedDoc });
   }
 
-  @Get('/fetch/:userid')
-  @UseGuards(AuthGuard)
+  @Get('/fetch/:ssoid')
+  //@UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Fetch all user documents by sso_id' })
   @ApiBasicAuth("access-token")
-  async fetch(@Param("userid") userId: string,): Promise<UserDoc[]> {
-    return this.userDocsService.fetchByUserId(userId);
+  async fetch(@Param("ssoid") ssoId: string,): Promise<UserDoc[]> {
+    return this.userDocsService.fetchBySsoId(ssoId);
   }
 }
